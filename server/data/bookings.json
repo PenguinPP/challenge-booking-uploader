@@ -1,0 +1,27 @@
+[
+  {
+    "time": "Sun Mar 01 2020 12:00:00 GMT+1100 (Australian Eastern Daylight Time)",
+    "duration": 180,
+    "user_id": "0001"
+  },
+  {
+    "time": "Mon Mar 02 2020 12:00:00 GMT+1100 (Australian Eastern Daylight Time)",
+    "duration": 180,
+    "user_id": "0001"
+  },
+  {
+    "time": "Tue Mar 03 2020 12:00:00 GMT+1100 (Australian Eastern Daylight Time)",
+    "duration": 180,
+    "user_id": "0001"
+  },
+  {
+    "time": "Wed Mar 04 2020 12:00:00 GMT+1100 (Australian Eastern Daylight Time)",
+    "duration": 180,
+    "user_id": "0001"
+  },
+  {
+    "time": "Thu Mar 05 2020 12:00:00 GMT+1100 (Australian Eastern Daylight Time)",
+    "duration": 180,
+    "user_id": "0001"
+  }
+]

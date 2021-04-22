@@ -1,20 +1,29 @@
-const express = require('express')
-const cors = require('cors')
-const fs = require('fs')
+const express = require("express");
+const cors = require("cors");
+const fs = require("fs");
+const { BookingDao } = require("./dao/bookingsDao");
 
-const app = express()
-app.use(cors()) // so that app can access
+const port = 3001;
 
-const bookings = JSON.parse(fs.readFileSync('./server/bookings.json')).map(
-  (bookingRecord) => ({
-    time: Date.parse(bookingRecord.time),
-    duration: bookingRecord.duration * 60 * 1000, // mins into ms
-    userId: bookingRecord.user_id,
-  }),
-)
+const app = express();
+app.use(cors()); // so that app can access
+app.use(express.json());
 
-app.get('/bookings', (_, res) => {
-  res.json(bookings)
-})
+const bookingDao = new BookingDao();
+const bookings = bookingDao.readBookings();
 
-app.listen(3001)
+app.get("/bookings", (_, res) => {
+  res.json(bookings);
+});
+
+app.post("/bookings/add", (req, res) => {
+  req.body.map((newBooking) => {
+    bookings.push(newBooking);
+  });
+  bookingDao.writeBookings(bookings);
+  res.send(bookings);
+});
+
+app.listen(port, () => {
+  console.log("Server is listening on port: " + port);
+});
