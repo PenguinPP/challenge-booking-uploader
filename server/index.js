@@ -17,6 +17,7 @@ app.get("/bookings", (_, res) => {
 });
 
 app.post("/bookings/add", (req, res) => {
+  console.log(req.body);
   req.body.map((newBooking) => {
     bookings.push(newBooking);
   });

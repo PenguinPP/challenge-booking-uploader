@@ -71,6 +71,33 @@ export const App = () => {
     reader.readAsBinaryString(files[0]);
   };
 
+  const sendNewBookings = () => {
+    console.log("Its running");
+
+    fetch(`${apiUrl}/bookings/add`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(
+        newBookingsWithValidity
+          .filter((booking) => !booking.hasConflict)
+          .map((booking) => {
+            const { time, duration, userId } = booking;
+
+            return {
+              time: time.getTime(),
+              duration: duration,
+              userId: userId,
+            };
+          })
+      ),
+    })
+      .then((response) => response.json())
+      .then(setBookings)
+      .then(setNewBookings([]));
+  };
+
   return (
     <div className="App">
       <div className="App-header">
@@ -102,7 +129,6 @@ export const App = () => {
         })}
         <p>New Bookings: </p>
         {newBookingsWithValidity.map((booking, i) => {
-          console.log(booking);
           const date = new Date(booking.time);
           const duration = booking.duration / (60 * 1000);
           return (
@@ -113,11 +139,14 @@ export const App = () => {
               </span>
               <span className="App-booking-user">{booking.userId}</span>
               <span className="App-booking-user">
-                {String(booking.hasConflict)}
+                {"Conflict?: " + String(booking.hasConflict)}
               </span>
             </p>
           );
         })}
+        {newBookingsWithValidity.length > 0 && (
+          <button onClick={() => sendNewBookings()}>Send Valid Bookings</button>
+        )}
       </div>
     </div>
   );
