@@ -16,13 +16,12 @@ app.get("/bookings", (_, res) => {
   res.json(bookings);
 });
 
-app.post("/bookings/add", (req, res) => {
-  console.log(req.body);
+app.post("/bookings", (req, res) => {
   req.body.map((newBooking) => {
     bookings.push(newBooking);
   });
   bookingDao.writeBookings(bookings);
-  res.send(bookings);
+  res.json({ status: "Success" });
 });
 
 app.listen(port, () => {

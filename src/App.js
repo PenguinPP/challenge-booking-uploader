@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import Dropzone from "react-dropzone";
 import "./App.css";
-// import csv from "csv";
 import { parse } from "csv/lib/sync";
-import { areIntervalsOverlapping, addMilliseconds } from "date-fns";
-
+import { isValid } from "date-fns";
+import Timeline from "./timeline/Timeline";
+import { checkBookingValidity } from "./utils/timeUtils";
 const apiUrl = "http://localhost:3001";
 
 export const App = () => {
@@ -16,38 +16,10 @@ export const App = () => {
     fetch(`${apiUrl}/bookings`)
       .then((response) => response.json())
       .then(setBookings);
-  }, []);
+  }, [newBookings]);
 
   useEffect(() => {
-    const validatedBookings = newBookings.map((booking) => {
-      const { time: startTime, duration, userId } = booking;
-      const endTime = addMilliseconds(startTime, duration);
-
-      let isOverlap = false;
-
-      for (const existingBooking of bookings) {
-        const {
-          time: existingBookingStart,
-          duration: existingBookingDuration,
-        } = existingBooking;
-        const existingBookingEnd = addMilliseconds(
-          existingBookingStart,
-          existingBookingDuration
-        );
-
-        if (
-          areIntervalsOverlapping(
-            { start: startTime, end: endTime },
-            { start: existingBookingStart, end: existingBookingEnd }
-          )
-        ) {
-          isOverlap = true;
-          break;
-        }
-      }
-
-      return { ...booking, hasConflict: isOverlap };
-    });
+    const validatedBookings = checkBookingValidity(bookings, newBookings);
     setNewBookingsWithValidity(validatedBookings);
   }, [newBookings]);
 
@@ -56,6 +28,30 @@ export const App = () => {
 
     reader.onload = () => {
       const unformattedRecords = parse(reader.result, { from_line: 2 });
+      console.log(unformattedRecords);
+      const isRecordValidSize = (record) => {
+        return record.length === 3;
+      };
+      const durationIsNumber = (record) => {
+        return Number(record[1].trim());
+      };
+      const timeIsValidDate = (record) => {
+        return isValid(new Date(record[0].trim()));
+      };
+      if (!unformattedRecords.every(isRecordValidSize)) {
+        alert(
+          "Error with CSV file, ensure CSV has 3 columns: time, duration, userId"
+        );
+        return;
+      }
+      if (!unformattedRecords.every(durationIsNumber)) {
+        alert("Duration must be a number.");
+        return;
+      }
+      if (!unformattedRecords.every(timeIsValidDate)) {
+        alert("Invalid date in CSV file.");
+        return;
+      }
 
       const formattedRecords = unformattedRecords.map((record) => {
         return {
@@ -64,7 +60,6 @@ export const App = () => {
           userId: record[2].trim(),
         };
       });
-
       setNewBookings(formattedRecords);
     };
 
@@ -72,9 +67,7 @@ export const App = () => {
   };
 
   const sendNewBookings = () => {
-    console.log("Its running");
-
-    fetch(`${apiUrl}/bookings/add`, {
+    fetch(`${apiUrl}/bookings`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -93,9 +86,9 @@ export const App = () => {
           })
       ),
     })
-      .then((response) => response.json())
-      .then(setBookings)
-      .then(setNewBookings([]));
+      .then(setNewBookings([]))
+      .then(setNewBookingsWithValidity([]))
+      .catch((error) => console.error(error));
   };
 
   return (
@@ -113,37 +106,12 @@ export const App = () => {
         </Dropzone>
       </div>
       <div className="App-main">
-        <p>Existing bookings:</p>
-        {bookings.map((booking, i) => {
-          const date = new Date(booking.time);
-          const duration = booking.duration / (60 * 1000);
-          return (
-            <p key={i} className="App-booking">
-              <span className="App-booking-time">{date.toString()}</span>
-              <span className="App-booking-duration">
-                {duration.toFixed(1)}
-              </span>
-              <span className="App-booking-user">{booking.userId}</span>
-            </p>
-          );
-        })}
-        <p>New Bookings: </p>
-        {newBookingsWithValidity.map((booking, i) => {
-          const date = new Date(booking.time);
-          const duration = booking.duration / (60 * 1000);
-          return (
-            <p key={i} className="App-booking">
-              <span className="App-booking-time">{date.toString()}</span>
-              <span className="App-booking-duration">
-                {duration.toFixed(1)}
-              </span>
-              <span className="App-booking-user">{booking.userId}</span>
-              <span className="App-booking-user">
-                {"Conflict?: " + String(booking.hasConflict)}
-              </span>
-            </p>
-          );
-        })}
+        <div className="App-chart">
+          <Timeline
+            bookings={bookings}
+            newBookingsWithValidity={newBookingsWithValidity}
+          />
+        </div>
         {newBookingsWithValidity.length > 0 && (
           <button onClick={() => sendNewBookings()}>Send Valid Bookings</button>
         )}
