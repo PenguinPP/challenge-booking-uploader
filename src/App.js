@@ -28,7 +28,6 @@ export const App = () => {
 
     reader.onload = () => {
       const unformattedRecords = parse(reader.result, { from_line: 2 });
-      console.log(unformattedRecords);
       const isRecordValidSize = (record) => {
         return record.length === 3;
       };
