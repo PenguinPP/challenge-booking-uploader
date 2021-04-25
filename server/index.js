@@ -24,7 +24,7 @@ app.post("/bookings", (req, res) => {
     bookingDao.writeBookings(bookings);
     res.json({ status: "Success" });
   } catch (error) {
-    res.error(error);
+    res.status(500).send("Something broke!");
   }
 });
 

@@ -50,6 +50,7 @@ export default function Timeline({ bookings, newBookingsWithValidity }) {
     }
   }
 
+  //render chart
   return (
     <Chart
       width={"90%"}
