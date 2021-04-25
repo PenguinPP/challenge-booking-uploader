@@ -17,11 +17,15 @@ app.get("/bookings", (_, res) => {
 });
 
 app.post("/bookings", (req, res) => {
-  req.body.map((newBooking) => {
-    bookings.push(newBooking);
-  });
-  bookingDao.writeBookings(bookings);
-  res.json({ status: "Success" });
+  try {
+    req.body.map((newBooking) => {
+      bookings.push(newBooking);
+    });
+    bookingDao.writeBookings(bookings);
+    res.json({ status: "Success" });
+  } catch (error) {
+    res.error(error);
+  }
 });
 
 app.listen(port, () => {
